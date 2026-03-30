@@ -1,0 +1,58 @@
+{
+  "name": "GameProgress",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user"
+    },
+    "game_id": {
+      "type": "string",
+      "description": "ID of the therapeutic game"
+    },
+    "game_name": {
+      "type": "string",
+      "description": "Name of the game"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the game was completed"
+    },
+    "duration_minutes": {
+      "type": "integer",
+      "description": "How long the user played in minutes"
+    },
+    "mood_before": {
+      "type": "string",
+      "enum": [
+        "very_low",
+        "low",
+        "neutral",
+        "good",
+        "very_good"
+      ],
+      "description": "User's mood before playing"
+    },
+    "mood_after": {
+      "type": "string",
+      "enum": [
+        "very_low",
+        "low",
+        "neutral",
+        "good",
+        "very_good"
+      ],
+      "description": "User's mood after playing"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional user notes about the experience"
+    }
+  },
+  "required": [
+    "user_email",
+    "game_id",
+    "game_name"
+  ]
+}

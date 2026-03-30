@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "properties": {
+    "age": {
+      "type": "integer",
+      "description": "User's age"
+    },
+    "profession": {
+      "type": "string",
+      "description": "User's profession or occupation"
+    },
+    "gender": {
+      "type": "string",
+      "description": "User's gender identity (inclusive of all identities)"
+    },
+    "preferred_name": {
+      "type": "string",
+      "description": "Name the user prefers to be called"
+    },
+    "additional_info": {
+      "type": "string",
+      "description": "Any additional relevant information about sleep, location, etc."
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has completed onboarding"
+    },
+    "last_assessment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of last mental health assessment"
+    }
+  },
+  "name": "User",
+  "required": [
+    "age",
+    "profession",
+    "gender",
+    "preferred_name",
+    "additional_info",
+    "last_assessment_date"
+  ]
+}

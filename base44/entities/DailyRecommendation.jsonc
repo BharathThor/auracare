@@ -1,0 +1,60 @@
+{
+  "name": "DailyRecommendation",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the recommendation"
+    },
+    "recommendations": {
+      "type": "array",
+      "description": "List of daily wellness recommendations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "mindfulness",
+              "physical",
+              "social",
+              "creative",
+              "rest"
+            ]
+          },
+          "duration": {
+            "type": "string",
+            "description": "Estimated time needed"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "motivational_message": {
+      "type": "string",
+      "description": "Daily motivational message"
+    }
+  },
+  "required": [
+    "user_email",
+    "date",
+    "recommendations"
+  ]
+}

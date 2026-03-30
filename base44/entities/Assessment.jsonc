@@ -1,0 +1,66 @@
+{
+  "name": "Assessment",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who took the assessment"
+    },
+    "responses": {
+      "type": "array",
+      "description": "Array of question-answer pairs",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mental_health_state": {
+      "type": "object",
+      "description": "Categorized mental health states with severity",
+      "properties": {
+        "primary_state": {
+          "type": "string",
+          "description": "Primary mental health state (e.g., anxiety, depression, stress)"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "mild",
+            "moderate",
+            "significant"
+          ],
+          "description": "Severity level of the primary state"
+        },
+        "secondary_states": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Other identified mental health concerns"
+        }
+      }
+    },
+    "empathetic_feedback": {
+      "type": "string",
+      "description": "Personalized, empathetic feedback based on assessment"
+    },
+    "date_taken": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the assessment was completed"
+    }
+  },
+  "required": [
+    "user_email",
+    "responses",
+    "mental_health_state",
+    "empathetic_feedback"
+  ]
+}
