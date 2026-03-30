@@ -24,6 +24,8 @@ import RestReminder from "../components/games/RestReminder";
 import EmotionWheel from "../components/games/EmotionWheel";
 import MoodTracker from "../components/games/MoodTracker";
 import SocialConnection from "../components/games/SocialConnection";
+import BubblePop from "../components/games/BubblePop";
+import MindfulMemory from "../components/games/MindfulMemory";
 
 const gameComponents = {
   "breathing-biofeedback": BreathingBiofeedback,
@@ -41,90 +43,30 @@ const gameComponents = {
   "rest-reminder": RestReminder,
   "emotion-wheel": EmotionWheel,
   "mood-tracker": MoodTracker,
-  "social-connection": SocialConnection
+  "social-connection": SocialConnection,
+  "bubble-pop": BubblePop,
+  "mindful-memory": MindfulMemory
 };
 
 const gameInfo = {
-  "breathing-biofeedback": {
-    name: "Breathing Biofeedback",
-    icon: "🫁",
-    description: "Visual biofeedback system that helps you master anxiety-reducing breathing patterns",
-  },
-  "thought-reframing": {
-    name: "Thought Detective",
-    icon: "🔍",
-    description: "CBT-based game to identify and challenge negative thought patterns",
-  },
-  "grounding-54321": {
-    name: "5-4-3-2-1 Grounding",
-    icon: "🌟",
-    description: "Sensory grounding exercise to anchor you in the present moment",
-  },
-  "progressive-relaxation": {
-    name: "Body Tension Release",
-    icon: "🧘",
-    description: "Interactive progressive muscle relaxation with visual guidance",
-  },
-  "mood-lifter": {
-    name: "Mood Lifter Activities",
-    icon: "🎯",
-    description: "Behavioral activation game based on proven depression treatment",
-  },
-  "gratitude-chain": {
-    name: "Gratitude Chain Builder",
-    icon: "⛓️",
-    description: "Build neural pathways for positive thinking through interactive gratitude practice",
-  },
-  "achievement-tracker": {
-    name: "Small Wins Tracker",
-    icon: "🏆",
-    description: "Celebrate daily accomplishments to combat negative self-perception",
-  },
-  "worry-time": {
-    name: "Worry Time Container",
-    icon: "⏰",
-    description: "Schedule and contain worries using proven anxiety reduction technique",
-  },
-  "body-scan": {
-    name: "Interactive Body Scan",
-    icon: "🧠",
-    description: "Mindfulness meditation with clickable body parts for focused awareness",
-  },
-  "stress-ball": {
-    name: "Stress Release Ball",
-    icon: "⚽",
-    description: "Physical tension release through interactive clicking game",
-  },
-  "energy-matrix": {
-    name: "Energy Management Matrix",
-    icon: "⚡",
-    description: "Identify energy drainers and rechargers to prevent burnout",
-  },
-  "boundary-practice": {
-    name: "Boundary Practice Game",
-    icon: "🛡️",
-    description: "Practice saying no and setting healthy boundaries through scenarios",
-  },
-  "rest-reminder": {
-    name: "Rest & Recovery",
-    icon: "💤",
-    description: "Guided rest practices with permission to pause and recover",
-  },
-  "emotion-wheel": {
-    name: "Emotion Identification Wheel",
-    icon: "🎨",
-    description: "Interactive wheel to identify and process complex emotions",
-  },
-  "mood-tracker": {
-    name: "Mood Pattern Tracker",
-    icon: "📊",
-    description: "Track mood patterns to identify triggers and trends",
-  },
-  "social-connection": {
-    name: "Connection Builder",
-    icon: "💝",
-    description: "Plan meaningful social connections to combat isolation",
-  }
+  "breathing-biofeedback": { name: "Breathing Biofeedback", icon: "🫁", description: "Visual biofeedback breathing with 3 levels" },
+  "thought-reframing": { name: "Thought Detective", icon: "🔍", description: "CBT-based thought challenging" },
+  "grounding-54321": { name: "5-4-3-2-1 Grounding", icon: "🌟", description: "Sensory grounding exercise" },
+  "progressive-relaxation": { name: "Body Tension Release", icon: "🧘", description: "Progressive muscle relaxation" },
+  "mood-lifter": { name: "Mood Lifter Activities", icon: "🎯", description: "Behavioral activation" },
+  "gratitude-chain": { name: "Gratitude Chain Builder", icon: "⛓️", description: "Build gratitude chains" },
+  "achievement-tracker": { name: "Small Wins Tracker", icon: "🏆", description: "Celebrate your wins" },
+  "worry-time": { name: "Worry Time Container", icon: "⏰", description: "Contain your worries" },
+  "body-scan": { name: "Interactive Body Scan", icon: "🫀", description: "Mindfulness body scan" },
+  "stress-ball": { name: "Stress Release Ball", icon: "⚽", description: "Squeeze away tension — 5 levels!" },
+  "energy-matrix": { name: "Energy Management Matrix", icon: "⚡", description: "Map energy drainers and rechargers" },
+  "boundary-practice": { name: "Boundary Practice Game", icon: "🛡️", description: "Practice healthy boundaries" },
+  "rest-reminder": { name: "Rest & Recovery", icon: "💤", description: "Guided rest practice" },
+  "emotion-wheel": { name: "Emotion Identification Wheel", icon: "🎨", description: "Identify your emotions" },
+  "mood-tracker": { name: "Mood Pattern Tracker", icon: "📊", description: "Track your mood patterns" },
+  "social-connection": { name: "Connection Builder", icon: "💝", description: "Plan meaningful connections" },
+  "bubble-pop": { name: "Bubble Pop Therapy", icon: "🫧", description: "Pop calm bubbles, dodge worry bubbles — 5 levels!" },
+  "mindful-memory": { name: "Mindful Memory", icon: "🧠", description: "Match calming nature pairs — 4 levels" }
 };
 
 export default function GameDetail() {

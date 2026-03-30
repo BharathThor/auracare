@@ -16,6 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import Mascot from "./components/Mascot";
 
 const navigationItems = [
   {
@@ -127,6 +128,7 @@ export default function Layout({ children, currentPageName }) {
             {children}
           </div>
         </main>
+        <Mascot />
       </div>
     </SidebarProvider>
   );
