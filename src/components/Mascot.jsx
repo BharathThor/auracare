@@ -1,59 +1,51 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 const pageMessages = {
   "/Dashboard": [
-    "Hey there! I'm Mochi 🐼 Your wellness buddy! Let's crush today's challenges!",
+    "Hey! I'm Mochi 🐰 Your little wellness buddy! Let's make today wonderful!",
     "You showed up today — that's already a win! 🌟",
-    "I believe in you! Complete a challenge and earn XP! ⚡",
-    "Every small step counts. You're doing amazing! 💜"
+    "Complete a challenge and earn XP! You've got this! ⚡",
+    "Every small step counts. I'm cheering for you! 💜"
   ],
   "/Games": [
-    "Ooh games! My favorite! Pick one and let's play! 🎮",
+    "Ooh games! My favourite! Pick one and let's play! 🎮",
     "These aren't just games — they're superpowers for your mind! 🦸",
-    "Level up your mental wellness! Which game calls to you? ⭐",
-    "I've played all these games. The breathing one is chef's kiss! 🫁"
+    "Level up your mental wellness! Which one calls to you? ⭐",
+    "I love the breathing game. It makes me feel so floaty! 🫁"
   ],
   "/Assessment": [
     "Take a deep breath... I'll be right here with you 💜",
-    "There are no wrong answers. Be honest with yourself! 🌸",
-    "This helps me understand how to help you better! 🧠",
+    "There are no wrong answers. Just be honest with yourself 🌸",
+    "This helps me understand you better so I can help more! 🧠",
   ],
   "/Profile": [
     "Look how far you've come! So proud of you! 🏆",
     "Your wellness journey is unique and beautiful! ✨",
+    "Your achievements are shining bright! 🌟",
   ],
   "/Helplines": [
-    "Reaching out takes courage. You're incredibly brave! 💪",
-    "Help is always available. You're never alone! 🤝",
+    "Reaching out takes courage. You are incredibly brave! 💪",
+    "Help is always available. You are never alone! 🤝",
   ],
   default: [
-    "Hi! I'm Mochi! 🐼 I'm here to cheer you on!",
+    "Hi! I'm Mochi! 🐰 I'm here to cheer you on!",
     "Remember: small steps lead to big changes! 🌱",
     "You've got this! I believe in you! 💜",
+    "Hop hop! Let's make progress today! 🐾",
   ]
-};
-
-const moods = {
-  happy: "😄",
-  excited: "🤩",
-  calm: "😌",
-  thinking: "🤔",
-  cheering: "🎉"
 };
 
 export default function Mascot() {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
   const [message, setMessage] = useState("");
-  const [mood, setMood] = useState("happy");
   const [bounce, setBounce] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [wiggle, setWiggle] = useState(false);
 
-  // Don't show on Landing or Onboarding
   const hiddenPaths = ["/", "/Landing", "/Onboarding"];
   if (hiddenPaths.some(p => location.pathname === p || location.pathname.includes("Landing") || location.pathname.includes("Onboarding"))) {
     return null;
@@ -61,17 +53,12 @@ export default function Mascot() {
 
   useEffect(() => {
     const messages = pageMessages[location.pathname] || pageMessages.default;
-    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-    setMessage(randomMsg);
-    setIsOpen(true);
+    setMessage(messages[Math.floor(Math.random() * messages.length)]);
     setIsMinimized(false);
-
-    // Auto-minimize after 6 seconds
     const timer = setTimeout(() => setIsMinimized(true), 6000);
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
-  // Random bounce
   useEffect(() => {
     const interval = setInterval(() => {
       setBounce(true);
@@ -80,82 +67,122 @@ export default function Mascot() {
     return () => clearInterval(interval);
   }, []);
 
-  const moodEmoji = "🐼";
+  // Ear wiggle
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWiggle(true);
+      setTimeout(() => setWiggle(false), 800);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (dismissed) {
     return (
       <motion.button
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        onClick={() => { setDismissed(false); setIsMinimized(false); setIsOpen(true); }}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-2xl z-50 text-2xl hover:scale-110 transition-transform"
+        onClick={() => { setDismissed(false); setIsMinimized(false); }}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center shadow-2xl z-50 text-2xl hover:scale-110 transition-transform border-4 border-white"
+        title="Bring Mochi back!"
       >
-        🐼
+        🐰
       </motion.button>
     );
   }
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      {/* Speech bubble */}
       <AnimatePresence>
-        {isOpen && !isMinimized && (
+        {!isMinimized && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            initial={{ opacity: 0, y: 10, scale: 0.85 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.8 }}
-            className="relative bg-white rounded-2xl shadow-2xl p-4 max-w-56 border-2 border-purple-200"
+            exit={{ opacity: 0, y: 10, scale: 0.85 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="relative bg-white rounded-2xl shadow-2xl p-4 max-w-[220px] border-2 border-pink-200"
           >
-            {/* Speech bubble tail */}
-            <div className="absolute -bottom-3 right-8 w-0 h-0 border-l-8 border-r-8 border-t-12 border-l-transparent border-r-transparent border-t-white" style={{ borderTopWidth: 12 }} />
-            <div className="absolute -bottom-4 right-7 w-0 h-0 border-l-10 border-r-10 border-t-12 border-l-transparent border-r-transparent border-t-purple-200" style={{ borderLeftWidth: 10, borderRightWidth: 10, borderTopWidth: 14 }} />
+            {/* Bubble tail */}
+            <div className="absolute -bottom-3 right-7 w-0 h-0"
+              style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: "12px solid white" }} />
+            <div className="absolute -bottom-4 right-6 w-0 h-0"
+              style={{ borderLeft: "10px solid transparent", borderRight: "10px solid transparent", borderTop: "14px solid #fbcfe8" }} />
 
-            <button
-              onClick={() => setIsMinimized(true)}
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setIsMinimized(true)} className="absolute top-2 right-2 text-gray-300 hover:text-gray-500 transition-colors">
               <ChevronDown className="w-4 h-4" />
             </button>
 
             <p className="text-sm text-gray-700 leading-relaxed pr-4">{message}</p>
 
-            <button
-              onClick={() => setDismissed(true)}
-              className="mt-2 text-xs text-gray-400 hover:text-gray-600 underline"
-            >
+            <button onClick={() => setDismissed(true)} className="mt-2 text-xs text-gray-300 hover:text-gray-500 underline transition-colors">
               Hide Mochi
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Mascot Avatar */}
+      {/* Rabbit Avatar */}
       <motion.button
-        animate={{
-          y: bounce ? [-8, 0] : 0,
-          rotate: bounce ? [-5, 5, 0] : 0
-        }}
-        transition={{ duration: 0.5 }}
-        onClick={() => {
-          if (isMinimized) {
-            setIsMinimized(false);
-            setIsOpen(true);
-          } else {
-            setIsMinimized(true);
-          }
-        }}
+        animate={{ y: bounce ? [-10, 0] : 0 }}
+        transition={{ duration: 0.4, type: "spring", stiffness: 300 }}
+        onClick={() => setIsMinimized(m => !m)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-2xl text-3xl border-4 border-white relative"
+        className="relative w-16 h-16 flex items-center justify-center"
+        title={isMinimized ? "Chat with Mochi!" : "Hide message"}
       >
-        🐼
-        {/* Wiggle ears */}
-        <motion.div
-          animate={{ rotate: [0, 10, -10, 0] }}
-          transition={{ repeat: Infinity, duration: 2, delay: 1 }}
-          className="absolute -top-1 -left-1 text-xs"
-        >
-          🌸
-        </motion.div>
+        {/* Rabbit body */}
+        <div className="w-16 h-16 bg-gradient-to-br from-pink-300 to-purple-400 rounded-full flex items-center justify-center shadow-2xl border-4 border-white relative overflow-visible">
+          {/* Ears */}
+          <motion.div
+            animate={{ rotate: wiggle ? [0, -15, 15, -8, 8, 0] : 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute -top-5 left-2 flex gap-3"
+          >
+            <div className="w-3.5 h-7 bg-gradient-to-t from-pink-300 to-pink-100 rounded-full border-2 border-pink-200 shadow-sm" style={{ transform: "rotate(-8deg)" }}>
+              <div className="w-1.5 h-4 bg-pink-400 rounded-full mx-auto mt-0.5" />
+            </div>
+            <div className="w-3.5 h-7 bg-gradient-to-t from-pink-300 to-pink-100 rounded-full border-2 border-pink-200 shadow-sm" style={{ transform: "rotate(8deg)" }}>
+              <div className="w-1.5 h-4 bg-pink-400 rounded-full mx-auto mt-0.5" />
+            </div>
+          </motion.div>
+
+          {/* Face */}
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Eyes */}
+            <div className="flex gap-2 mb-0.5">
+              <motion.div
+                animate={{ scaleY: bounce ? [1, 0.1, 1] : 1 }}
+                transition={{ duration: 0.3 }}
+                className="w-2.5 h-2.5 bg-gray-800 rounded-full"
+              />
+              <motion.div
+                animate={{ scaleY: bounce ? [1, 0.1, 1] : 1 }}
+                transition={{ duration: 0.3 }}
+                className="w-2.5 h-2.5 bg-gray-800 rounded-full"
+              />
+            </div>
+            {/* Cheek blushes */}
+            <div className="flex gap-4 -mt-0.5 mb-0.5">
+              <div className="w-3 h-1.5 bg-pink-400 rounded-full opacity-60" />
+              <div className="w-3 h-1.5 bg-pink-400 rounded-full opacity-60" />
+            </div>
+            {/* Nose & mouth */}
+            <div className="flex flex-col items-center">
+              <div className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
+              <div className="w-3 h-1 border-b-2 border-gray-600 rounded-b-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Notification dot when minimized */}
+        {isMinimized && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1 -right-1 w-4 h-4 bg-pink-500 rounded-full border-2 border-white"
+          />
+        )}
       </motion.button>
     </div>
   );
