@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import Layout from './layout.jsx';
 import Landing from './pages/Landing';
 import Onboarding from './pages/Onboarding';
 import Assessment from './pages/Assessment';
@@ -45,12 +46,13 @@ const AuthenticatedApp = () => {
       <Route path="/Landing" element={<Landing />} />
       <Route path="/Onboarding" element={<Onboarding />} />
       <Route path="/Assessment" element={<Assessment />} />
-      <Route path="/Dashboard" element={<Dashboard />} />
-      <Route path="/Games" element={<Games />} />
-      <Route path="/GameDetail" element={<GameDetail />} />
-      <Route path="/Helplines" element={<Helplines />} />
-      <Route path="/Profile" element={<Profile />} />
-      {/* Add your page Route elements here */}
+      <Route element={<Layout />}>
+        <Route path="/Dashboard" element={<Dashboard />} />
+        <Route path="/Games" element={<Games />} />
+        <Route path="/GameDetail" element={<GameDetail />} />
+        <Route path="/Helplines" element={<Helplines />} />
+        <Route path="/Profile" element={<Profile />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
