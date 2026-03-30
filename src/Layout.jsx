@@ -31,7 +31,7 @@ export default function Layout({ children }) {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navigationItems.map((item) => {
-              const isActive = location.pathname === `/${item.url}` || location.pathname === createPageUrl(item.url);
+              const isActive = location.pathname === `/${item.url}`;
               return (
                 <Link
                   key={item.title}
