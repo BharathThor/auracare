@@ -1,185 +1,226 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Volume2, VolumeX } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Volume2, VolumeX, ChevronRight, Trophy } from "lucide-react";
+
+const bodyParts = [
+  { id: "scalp", label: "Scalp & Forehead", emoji: "🧠", instruction: "Notice any tightness or wrinkles in your forehead. Allow your eyebrows to soften and relax completely.", tension_tip: "We often furrow our brows without realizing it. Let it go." },
+  { id: "eyes", label: "Eyes & Face", emoji: "👁️", instruction: "Soften the muscles around your eyes. Notice your jaw — let it drop slightly if it feels clenched.", tension_tip: "The jaw holds enormous tension. Allow it to relax naturally." },
+  { id: "neck", label: "Neck & Shoulders", emoji: "🤷", instruction: "Feel the weight of your head. Slowly drop your shoulders away from your ears. Notice any tightness here.", tension_tip: "Shoulders are the body's stress carriers. They can drop further than you think." },
+  { id: "chest", label: "Chest & Heart", emoji: "❤️", instruction: "Place a hand on your chest if you like. Feel it rise and fall with each breath. Breathe into any tightness you find.", tension_tip: "Anxiety often lives in the chest. Slow, full breaths here signal safety to your nervous system." },
+  { id: "belly", label: "Belly & Abdomen", emoji: "🌀", instruction: "Let your belly be soft and relaxed — not held in. Feel it expand as you breathe in, fall as you breathe out.", tension_tip: "We often unconsciously hold our stomachs in. Let go of that control completely." },
+  { id: "hands", label: "Arms & Hands", emoji: "🤲", instruction: "Notice the temperature in your hands. Let your fingers uncurl. Feel any tingling or heaviness in your arms.", tension_tip: "Hands often hold tension — especially if you've been gripping a phone or keyboard." },
+  { id: "hips", label: "Hips & Pelvis", emoji: "🦴", instruction: "Feel the weight of your pelvis against the surface beneath you. Let your hips soften and widen with gravity.", tension_tip: "Trauma and stress are often stored in the hips. Even sitting differently can release tension here." },
+  { id: "legs", label: "Thighs & Knees", emoji: "🦵", instruction: "Scan down through your thighs and knees. Notice any areas of holding or discomfort. Breathe into them gently.", tension_tip: "The legs often tense when we're preparing to 'flee' — even when there's no real threat." },
+  { id: "feet", label: "Feet & Toes", emoji: "🦶", instruction: "Feel your feet on the floor or floating. Wiggle your toes gently. Notice the sensations in your soles.", tension_tip: "Grounding yourself through your feet sends a signal to the brain that you are safe and supported." },
+];
 
 export default function BodyScan({ onComplete }) {
-  const [currentPart, setCurrentPart] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [clickedParts, setClickedParts] = useState(new Set());
+  const [step, setStep] = useState(-1); // -1 = intro
+  const [notes, setNotes] = useState({});
+  const [tension, setTension] = useState({});
+  const [soundOn, setSoundOn] = useState(true);
+  const [done, setDone] = useState(false);
+  const [isBreathing, setIsBreathing] = useState(false);
+  const [breathPhase, setBreathPhase] = useState("in");
+  const breathRef = useRef(null);
 
-  const bodyParts = [
-    { id: "feet", name: "Feet & Toes", instruction: "Notice any tension in your feet. Wiggle your toes. Relax.", y: 380, x: 200 },
-    { id: "legs", name: "Legs", instruction: "Feel the weight of your legs. Let them sink down. Release.", y: 280, x: 200 },
-    { id: "hips", name: "Hips & Lower Back", instruction: "Notice any tightness in your hips. Breathe into this area.", y: 200, x: 200 },
-    { id: "stomach", name: "Stomach & Chest", instruction: "Feel your belly rise and fall with each breath. Soften.", y: 140, x: 200 },
-    { id: "hands", name: "Hands & Arms", instruction: "Notice your hands. Open and close them gently. Relax.", y: 180, x: 120 },
-    { id: "shoulders", name: "Shoulders & Neck", instruction: "Drop your shoulders away from your ears. Release tension.", y: 100, x: 200 },
-    { id: "face", name: "Face & Head", instruction: "Relax your jaw. Soften your forehead. Let go.", y: 40, x: 200 }
-  ];
-
-  const handlePartClick = (index) => {
-    if (index !== currentPart) return;
-    
-    setClickedParts(new Set([...clickedParts, index]));
-    
-    if (soundEnabled) {
-      const part = bodyParts[index];
-      const utterance = new SpeechSynthesisUtterance(part.instruction);
-      utterance.rate = 0.7;
-      window.speechSynthesis.speak(utterance);
+  useEffect(() => {
+    if (step < 0 || step >= bodyParts.length) return;
+    const part = bodyParts[step];
+    if (soundOn && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(part.instruction);
+      u.rate = 0.75; u.pitch = 0.9; u.volume = 0.8;
+      window.speechSynthesis.speak(u);
     }
-    
-    setTimeout(() => {
-      if (index < bodyParts.length - 1) {
-        setCurrentPart(index + 1);
-      } else {
-        setCurrentPart(bodyParts.length);
-      }
-    }, 5000);
+  }, [step, soundOn]);
+
+  useEffect(() => {
+    return () => { window.speechSynthesis?.cancel(); clearTimeout(breathRef.current); };
+  }, []);
+
+  const startBreathing = () => {
+    setIsBreathing(true);
+    let phase = "in";
+    const cycle = () => {
+      setBreathPhase(phase);
+      breathRef.current = setTimeout(() => {
+        phase = phase === "in" ? "out" : "in";
+        cycle();
+      }, phase === "in" ? 4000 : 6000);
+    };
+    cycle();
   };
 
-  if (currentPart >= bodyParts.length) {
+  const stopBreathing = () => {
+    setIsBreathing(false);
+    clearTimeout(breathRef.current);
+  };
+
+  const handleNext = () => {
+    if (step < bodyParts.length - 1) setStep(s => s + 1);
+    else setDone(true);
+  };
+
+  const highTensionParts = Object.entries(tension).filter(([, v]) => v >= 3).map(([k]) => bodyParts.find(b => b.id === k)?.label);
+
+  if (done) {
     return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <Card className="max-w-2xl w-full border-none shadow-2xl bg-white/90 backdrop-blur-sm">
-          <CardContent className="p-10 text-center">
-            <div className="text-7xl mb-6">🧠</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Body Scan Complete</h2>
-            <p className="text-gray-600 mb-8 text-lg">
-              You've brought mindful awareness to your entire body. This practice helps reduce stress 
-              and increases body-mind connection.
-            </p>
-            <div className="grid grid-cols-5 gap-3">
-              {[
-                { value: "very_low", emoji: "😢" },
-                { value: "low", emoji: "😟" },
-                { value: "neutral", emoji: "😐" },
-                { value: "good", emoji: "🙂" },
-                { value: "very_good", emoji: "😊" }
-              ].map((mood) => (
-                <Button
-                  key={mood.value}
-                  variant="outline"
-                  className="h-20 text-4xl border-2 hover:border-purple-400 hover:bg-purple-50"
-                  onClick={() => onComplete(mood.value)}
-                >
-                  {mood.emoji}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen p-6 flex items-center justify-center bg-gradient-to-br from-teal-50 to-blue-50">
+        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-lg w-full">
+          <Card className="border-none shadow-2xl bg-white/90">
+            <CardContent className="p-10 text-center">
+              <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+              <h2 className="text-3xl font-black text-gray-900 mb-2">Body Scan Complete 🌿</h2>
+              <p className="text-gray-600 mb-4">You've moved through your whole body with awareness.</p>
+              {highTensionParts.length > 0 && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4 text-left">
+                  <p className="text-orange-700 font-bold text-sm mb-1">Areas of higher tension noticed:</p>
+                  <p className="text-orange-600 text-sm">{highTensionParts.join(", ")}</p>
+                  <p className="text-orange-500 text-xs mt-2">These areas benefit most from gentle movement, heat, or breath-work.</p>
+                </div>
+              )}
+              <div className="bg-teal-50 rounded-xl p-4 mb-6">
+                <p className="text-teal-700 text-sm">🧠 <strong>Science:</strong> MBSR (Mindfulness-Based Stress Reduction) body scans have been shown to reduce cortisol levels and improve sleep quality in as few as 8 sessions (Kabat-Zinn, 1994)</p>
+              </div>
+              <p className="text-gray-600 mb-4 font-medium">How do you feel?</p>
+              <div className="grid grid-cols-5 gap-2">
+                {[{v:"very_low",e:"😢"},{v:"low",e:"😟"},{v:"neutral",e:"😐"},{v:"good",e:"🙂"},{v:"very_good",e:"😊"}].map(m => (
+                  <Button key={m.v} variant="outline" className="h-16 text-3xl border-2 hover:border-teal-400" onClick={() => onComplete(m.v)}>{m.e}</Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     );
   }
 
-  const part = bodyParts[currentPart];
+  if (step === -1) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-teal-50 to-blue-50">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full">
+          <Card className="border-none shadow-2xl bg-white/90">
+            <CardContent className="p-10 text-center">
+              <div className="text-6xl mb-4">🫀</div>
+              <h1 className="text-3xl font-black text-gray-900 mb-3">Interactive Body Scan</h1>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                A guided mindfulness practice that moves awareness through each part of your body — releasing stored tension and stress.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-left">
+                <p className="text-amber-800 text-sm">🧠 This is the core technique of MBSR — proven to reduce anxiety, chronic pain, and improve immune function.</p>
+              </div>
+              <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-6">
+                <p className="text-gray-700 font-medium">Voice guidance</p>
+                <button onClick={() => setSoundOn(!soundOn)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${soundOn ? "bg-teal-500 text-white" : "bg-gray-200 text-gray-500"}`}>
+                  {soundOn ? <><Volume2 className="w-4 h-4" /> ON</> : <><VolumeX className="w-4 h-4" /> OFF</>}
+                </button>
+              </div>
+              <Button onClick={() => setStep(0)} className="w-full h-12 bg-gradient-to-r from-teal-500 to-blue-500 font-bold">
+                Begin Body Scan 🌿
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const part = bodyParts[step];
+  const tensionVal = tension[part.id] || 0;
 
   return (
-    <div className="min-h-screen p-6 flex items-center justify-center relative">
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute top-6 right-6"
-        onClick={() => setSoundEnabled(!soundEnabled)}
-      >
-        {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-      </Button>
-
-      <div className="max-w-4xl w-full">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Interactive Body Scan</h2>
-          <p className="text-gray-600">Click on the highlighted body part to begin</p>
-          <div className="mt-4">
-            <div className="inline-flex gap-2">
-              {bodyParts.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    clickedParts.has(index) ? "bg-green-500" : 
-                    index === currentPart ? "bg-purple-500" :
-                    "bg-gray-300"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-teal-50 via-blue-50 to-indigo-50">
+      <div className="max-w-xl mx-auto">
+        {/* Sound toggle */}
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-gray-500 text-sm">Step {step + 1} of {bodyParts.length}</p>
+          <button onClick={() => setSoundOn(!soundOn)} className="p-2 rounded-full bg-white shadow hover:shadow-md transition-shadow">
+            {soundOn ? <Volume2 className="w-5 h-5 text-teal-500" /> : <VolumeX className="w-5 h-5 text-gray-400" />}
+          </button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          {/* Body Illustration */}
-          <div className="relative h-[500px] bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 flex items-center justify-center">
-            <svg viewBox="0 0 400 500" className="w-full h-full">
-              {/* Simple body outline */}
-              <ellipse cx="200" cy="40" rx="40" ry="50" fill={clickedParts.has(6) ? "#10B981" : currentPart === 6 ? "#A855F7" : "#D1D5DB"} stroke="#6B7280" strokeWidth="2" opacity="0.8" />
-              <rect x="180" y="90" width="40" height="60" rx="10" fill={clickedParts.has(5) ? "#10B981" : currentPart === 5 ? "#A855F7" : "#D1D5DB"} stroke="#6B7280" strokeWidth="2" opacity="0.8" />
-              <rect x="175" y="140" width="50" height="80" rx="15" fill={clickedParts.has(3) ? "#10B981" : currentPart === 3 ? "#A855F7" : "#D1D5DB"} stroke="#6B7280" strokeWidth="2" opacity="0.8" />
-              <rect x="170" y="200" width="60" height="100" rx="20" fill={clickedParts.has(2) ? "#10B981" : currentPart === 2 ? "#A855F7" : "#D1D5DB"} stroke="#6B7280" strokeWidth="2" opacity="0.8" />
-              <rect x="165" y="280" width="70" height="120" rx="25" fill={clickedParts.has(1) ? "#10B981" : currentPart === 1 ? "#A855F7" : "#D1D5DB"} stroke="#6B7280" strokeWidth="2" opacity="0.8" />
-              <ellipse cx="200" cy="430" rx="50" ry="30" fill={clickedParts.has(0) ? "#10B981" : currentPart === 0 ? "#A855F7" : "#D1D5DB"} stroke="#6B7280" strokeWidth="2" opacity="0.8" />
-              
-              {/* Arms */}
-              <rect x="90" y="140" width="80" height="100" rx="20" fill={clickedParts.has(4) ? "#10B981" : currentPart === 4 ? "#A855F7" : "#D1D5DB"} stroke="#6B7280" strokeWidth="2" opacity="0.8" />
-              <rect x="230" y="140" width="80" height="100" rx="20" fill={clickedParts.has(4) ? "#10B981" : currentPart === 4 ? "#A855F7" : "#D1D5DB"} stroke="#6B7280" strokeWidth="2" opacity="0.8" />
-              
-              {/* Click indicator */}
-              {currentPart < bodyParts.length && (
-                <motion.circle
-                  cx={part.x}
-                  cy={part.y}
-                  r="20"
-                  fill="none"
-                  stroke="#A855F7"
-                  strokeWidth="3"
-                  animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [1, 0.5, 1]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity
-                  }}
-                />
-              )}
-            </svg>
-            
-            {/* Click button over current part */}
-            {currentPart < bodyParts.length && (
-              <Button
-                onClick={() => handlePartClick(currentPart)}
-                className="absolute bg-purple-600 hover:bg-purple-700 text-white rounded-full w-16 h-16 shadow-2xl"
-                style={{
-                  top: `${(part.y / 500) * 100}%`,
-                  left: `${(part.x / 400) * 100}%`,
-                  transform: 'translate(-50%, -50%)'
-                }}
-              >
-                Click
-              </Button>
-            )}
-          </div>
-
-          {/* Instructions */}
-          <div>
-            <motion.div
-              key={currentPart}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl p-8 shadow-xl"
-            >
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">{part.name}</h3>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">{part.instruction}</p>
-              
-              <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
-                <p className="text-sm text-gray-700">
-                  Take your time. Breathe deeply. Notice any sensations without judgment.
-                </p>
-              </div>
-            </motion.div>
-          </div>
+        {/* Progress */}
+        <div className="flex gap-1 mb-6">
+          {bodyParts.map((_, i) => (
+            <div key={i} className={`flex-1 h-2 rounded-full transition-all duration-500 ${i < step ? "bg-teal-400" : i === step ? "bg-teal-600" : "bg-gray-200"}`} />
+          ))}
         </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div key={step} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <Card className="border-none shadow-xl bg-white/90 backdrop-blur-sm">
+              <CardContent className="p-8">
+                <div className="text-center mb-6">
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ repeat: Infinity, duration: 3 }}
+                    className="text-6xl mb-3"
+                  >
+                    {part.emoji}
+                  </motion.div>
+                  <h2 className="text-2xl font-black text-gray-900">{part.label}</h2>
+                </div>
+
+                <div className="bg-teal-50 rounded-2xl p-5 mb-5">
+                  <p className="text-teal-800 text-base leading-relaxed">{part.instruction}</p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5">
+                  <p className="text-blue-600 text-xs">💡 {part.tension_tip}</p>
+                </div>
+
+                {/* Tension rating */}
+                <div className="mb-5">
+                  <label className="text-sm font-bold text-gray-700 block mb-3">How much tension do you feel here?</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">None</span>
+                    <div className="flex gap-2 flex-1 justify-center">
+                      {[1, 2, 3, 4, 5].map(v => (
+                        <button key={v} onClick={() => setTension(p => ({ ...p, [part.id]: v }))}
+                          className={`w-10 h-10 rounded-full font-bold text-sm transition-all ${
+                            tensionVal === v ? "bg-teal-500 text-white shadow-md scale-110" :
+                            tensionVal > v ? "bg-teal-200 text-teal-700" : "bg-gray-100 text-gray-400 hover:bg-teal-50"
+                          }`}>
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="text-xs text-gray-400">High</span>
+                  </div>
+                </div>
+
+                {/* Breathing button */}
+                {!isBreathing ? (
+                  <button onClick={startBreathing}
+                    className="w-full text-sm text-teal-600 hover:text-teal-800 font-medium bg-teal-50 rounded-xl py-3 mb-4 border border-teal-200 transition-colors">
+                    🫁 Add a breathing cycle here
+                  </button>
+                ) : (
+                  <div className="mb-4 text-center">
+                    <motion.div
+                      animate={{ scale: breathPhase === "in" ? 1.5 : 1 }}
+                      transition={{ duration: breathPhase === "in" ? 4 : 6, ease: "easeInOut" }}
+                      className="w-20 h-20 rounded-full bg-gradient-to-br from-teal-400 to-blue-400 mx-auto flex items-center justify-center text-white font-bold shadow-lg mb-2"
+                    >
+                      {breathPhase === "in" ? "In" : "Out"}
+                    </motion.div>
+                    <button onClick={stopBreathing} className="text-xs text-gray-400 hover:text-gray-600 underline">Stop breathing guide</button>
+                  </div>
+                )}
+
+                <Button onClick={handleNext}
+                  className="w-full h-12 bg-gradient-to-r from-teal-500 to-blue-500 font-bold hover:opacity-90">
+                  {step < bodyParts.length - 1 ? `Move to ${bodyParts[step + 1].label}` : "Complete Body Scan ✓"}
+                  <ChevronRight className="w-5 h-5 ml-1" />
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

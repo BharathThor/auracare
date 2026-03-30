@@ -1,198 +1,320 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, Zap, ZapOff } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Zap, Battery, Plus, Trash2, Trophy, ArrowRight } from "lucide-react";
+
+// Based on Jim Loehr & Tony Schwartz's "The Power of Full Engagement" + Burnout research by Maslach
+const DRAINER_EXAMPLES = [
+  "Endless scrolling", "Negative news", "Toxic relationships",
+  "Overcommitting", "Poor sleep", "Skipping meals", "Caffeine cycles",
+  "Cluttered environment", "Comparison on social media", "Unresolved conflicts"
+];
+
+const RECHARGER_EXAMPLES = [
+  "Spending time in nature", "Physical movement", "Deep sleep",
+  "Creative hobbies", "Quality time with loved ones", "Reading for pleasure",
+  "Meditation or prayer", "Acts of kindness", "Music", "Cooking a meal"
+];
+
+const phases = [
+  { id: "intro", title: "Energy Matrix" },
+  { id: "drain", title: "What drains you?" },
+  { id: "recharge", title: "What recharges you?" },
+  { id: "matrix", title: "Your Energy Map" },
+  { id: "plan", title: "Your Action Plan" },
+];
 
 export default function EnergyMatrix({ onComplete }) {
+  const [phase, setPhase] = useState("intro");
   const [drainers, setDrainers] = useState([]);
   const [rechargers, setRechargers] = useState([]);
-  const [currentInput, setCurrentInput] = useState("");
-  const [mode, setMode] = useState("drain");
-  const [step, setStep] = useState(1);
+  const [drainInput, setDrainInput] = useState("");
+  const [rechargeInput, setRechargeInput] = useState("");
+  const [commitments, setCommitments] = useState([]);
+  const [commitment, setCommitment] = useState("");
 
-  const addItem = () => {
-    if (!currentInput.trim()) return;
-    
-    if (mode === "drain") {
-      setDrainers([...drainers, currentInput.trim()]);
-    } else {
-      setRechargers([...rechargers, currentInput.trim()]);
-    }
-    setCurrentInput("");
+  const addDrainer = (val) => {
+    const v = val || drainInput;
+    if (v.trim() && drainers.length < 8) { setDrainers(p => [...p, v.trim()]); setDrainInput(""); }
   };
 
-  const canContinue = drainers.length >= 3 && rechargers.length >= 3;
+  const addRecharger = (val) => {
+    const v = val || rechargeInput;
+    if (v.trim() && rechargers.length < 8) { setRechargers(p => [...p, v.trim()]); setRechargeInput(""); }
+  };
 
-  if (step === 2) {
+  const addCommitment = () => {
+    if (commitment.trim()) { setCommitments(p => [...p, commitment.trim()]); setCommitment(""); }
+  };
+
+  if (phase === "intro") {
     return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <Card className="max-w-4xl w-full border-none shadow-2xl bg-white/90 backdrop-blur-sm">
-          <CardContent className="p-10">
-            <div className="text-center mb-8">
-              <div className="text-7xl mb-4">⚡</div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Your Energy Matrix</h2>
-              <p className="text-gray-600">Understanding what drains and recharges you</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <ZapOff className="w-6 h-6 text-red-600" />
-                  <h3 className="text-xl font-bold text-gray-900">Energy Drainers</h3>
-                </div>
-                <ul className="space-y-2">
-                  {drainers.map((item, index) => (
-                    <li key={index} className="text-gray-700 bg-white rounded-lg p-3 shadow-sm">
-                      • {item}
-                    </li>
-                  ))}
-                </ul>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-yellow-50 to-amber-50">
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-md w-full">
+          <Card className="border-none shadow-2xl bg-white/90">
+            <CardContent className="p-10 text-center">
+              <Zap className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+              <h1 className="text-3xl font-black text-gray-900 mb-3">Energy Management Matrix</h1>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Burnout isn't just about doing too much. It's about giving more energy than you're recovering.
+                <br /><br />
+                This exercise maps what's draining you vs. what restores you — so you can rebalance.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
+                <p className="text-amber-800 text-sm">🧠 <strong>Research:</strong> Loehr & Schwartz found that managing <em>energy</em> (not time) is the key to sustained high performance and wellbeing. Recharge activities are as important as work.</p>
               </div>
-
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Zap className="w-6 h-6 text-green-600" />
-                  <h3 className="text-xl font-bold text-gray-900">Energy Rechargers</h3>
-                </div>
-                <ul className="space-y-2">
-                  {rechargers.map((item, index) => (
-                    <li key={index} className="text-gray-700 bg-white rounded-lg p-3 shadow-sm">
-                      ✓ {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">Action Plan for Burnout Prevention:</h3>
-              <ul className="space-y-2 text-gray-700 text-sm">
-                <li>• Minimize or eliminate one energy drainer this week</li>
-                <li>• Schedule at least one energy recharger daily</li>
-                <li>• Notice when you're running low and take action</li>
-                <li>• Set boundaries around your biggest energy drainers</li>
-              </ul>
-            </div>
-
-            <p className="text-center text-gray-600 mb-8">
-              How helpful was this exercise in understanding your energy?
-            </p>
-
-            <div className="grid grid-cols-5 gap-3">
-              {[
-                { value: "very_low", emoji: "😢" },
-                { value: "low", emoji: "😟" },
-                { value: "neutral", emoji: "😐" },
-                { value: "good", emoji: "🙂" },
-                { value: "very_good", emoji: "😊" }
-              ].map((mood) => (
-                <Button
-                  key={mood.value}
-                  variant="outline"
-                  className="h-20 text-4xl border-2 hover:border-purple-400 hover:bg-purple-50"
-                  onClick={() => onComplete(mood.value)}
-                >
-                  {mood.emoji}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              <Button onClick={() => setPhase("drain")} className="w-full h-12 bg-gradient-to-r from-yellow-500 to-amber-500 font-bold">
+                Map My Energy ⚡
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen p-6 flex items-center justify-center">
-      <Card className="max-w-3xl w-full border-none shadow-2xl bg-white/90 backdrop-blur-sm">
-        <CardContent className="p-10">
-          <div className="text-center mb-8">
-            <div className="text-7xl mb-4">⚡</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Energy Management Matrix</h2>
-            <p className="text-gray-600">
-              Identify what drains and recharges your energy to prevent burnout
-            </p>
-          </div>
-
-          <div className="flex gap-4 mb-6">
-            <Button
-              onClick={() => setMode("drain")}
-              variant={mode === "drain" ? "default" : "outline"}
-              className={mode === "drain" ? "flex-1 bg-red-500 hover:bg-red-600" : "flex-1"}
-            >
-              <ZapOff className="w-4 h-4 mr-2" />
-              Energy Drainers ({drainers.length})
-            </Button>
-            <Button
-              onClick={() => setMode("recharge")}
-              variant={mode === "recharge" ? "default" : "outline"}
-              className={mode === "recharge" ? "flex-1 bg-green-500 hover:bg-green-600" : "flex-1"}
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Energy Rechargers ({rechargers.length})
-            </Button>
-          </div>
-
-          <div className={`p-6 rounded-xl border-2 mb-6 ${
-            mode === "drain" ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"
-          }`}>
-            <h3 className="font-semibold text-gray-900 mb-3">
-              {mode === "drain" ? "What drains your energy?" : "What recharges your energy?"}
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              {mode === "drain" 
-                ? "Examples: Toxic people, endless meetings, social media, clutter, negativity"
-                : "Examples: Nature walks, good sleep, creative hobbies, supportive friends, exercise"
-              }
-            </p>
-
-            <div className="flex gap-3 mb-4">
-              <Input
-                value={currentInput}
-                onChange={(e) => setCurrentInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && addItem()}
-                placeholder={mode === "drain" ? "Add an energy drainer..." : "Add an energy recharger..."}
-                className="h-12 text-base"
-              />
-              <Button
-                onClick={addItem}
-                className={mode === "drain" ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"}
-              >
-                <Plus className="w-5 h-5" />
-              </Button>
+  if (phase === "drain") {
+    return (
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-red-50 to-orange-50">
+        <div className="max-w-xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+              <Battery className="w-6 h-6 text-red-500" />
             </div>
+            <div>
+              <h2 className="text-2xl font-black text-gray-900">Energy Drainers</h2>
+              <p className="text-gray-500 text-sm">What consistently takes energy without giving back?</p>
+            </div>
+          </div>
 
-            <div className="space-y-2">
-              {(mode === "drain" ? drainers : rechargers).map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="bg-white rounded-lg p-3 shadow-sm"
-                >
-                  {item}
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-5">
+            <p className="text-red-700 text-sm">💡 Think: activities, people, habits, or situations that leave you feeling worse, exhausted, or depleted</p>
+          </div>
+
+          <div className="flex gap-2 mb-4">
+            <input value={drainInput} onChange={e => setDrainInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") addDrainer(); }}
+              placeholder="Add your own drainer..."
+              className="flex-1 border-2 border-red-200 rounded-xl px-4 py-3 focus:border-red-400 focus:outline-none text-gray-800" />
+            <Button onClick={() => addDrainer()} disabled={!drainInput.trim()} className="bg-red-500 hover:bg-red-600 px-5">
+              <Plus className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {drainers.length > 0 && (
+            <div className="mb-5">
+              <p className="text-xs font-bold text-gray-400 uppercase mb-2">Your drainers ({drainers.length})</p>
+              <div className="flex flex-wrap gap-2">
+                {drainers.map((d, i) => (
+                  <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    className="flex items-center gap-1.5 bg-red-100 border border-red-200 text-red-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                    🔴 {d}
+                    <button onClick={() => setDrainers(p => p.filter((_, idx) => idx !== i))} className="hover:text-red-600 ml-1">
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p className="text-sm text-gray-500 mb-3">Quick-add common ones:</p>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {DRAINER_EXAMPLES.filter(e => !drainers.includes(e)).slice(0, 6).map(ex => (
+              <button key={ex} onClick={() => addDrainer(ex)}
+                className="text-xs border border-red-200 bg-white hover:bg-red-50 text-red-700 px-3 py-1.5 rounded-full transition-colors">
+                + {ex}
+              </button>
+            ))}
+          </div>
+
+          <Button onClick={() => setPhase("recharge")} disabled={drainers.length < 2}
+            className="w-full h-12 bg-gradient-to-r from-orange-500 to-amber-500 font-bold disabled:opacity-40">
+            Next: What Recharges You? →
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "recharge") {
+    return (
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-green-50 to-teal-50">
+        <div className="max-w-xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <Zap className="w-6 h-6 text-green-500" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-gray-900">Energy Rechargers</h2>
+              <p className="text-gray-500 text-sm">What restores, energizes, or fulfills you?</p>
+            </div>
+          </div>
+
+          <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-5">
+            <p className="text-green-700 text-sm">💡 These are activities that leave you feeling better than when you started — even if they require effort</p>
+          </div>
+
+          <div className="flex gap-2 mb-4">
+            <input value={rechargeInput} onChange={e => setRechargeInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") addRecharger(); }}
+              placeholder="Add your own recharger..."
+              className="flex-1 border-2 border-green-200 rounded-xl px-4 py-3 focus:border-green-400 focus:outline-none text-gray-800" />
+            <Button onClick={() => addRecharger()} disabled={!rechargeInput.trim()} className="bg-green-500 hover:bg-green-600 px-5">
+              <Plus className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {rechargers.length > 0 && (
+            <div className="mb-5">
+              <p className="text-xs font-bold text-gray-400 uppercase mb-2">Your rechargers ({rechargers.length})</p>
+              <div className="flex flex-wrap gap-2">
+                {rechargers.map((d, i) => (
+                  <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    className="flex items-center gap-1.5 bg-green-100 border border-green-200 text-green-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                    🟢 {d}
+                    <button onClick={() => setRechargers(p => p.filter((_, idx) => idx !== i))} className="hover:text-green-600 ml-1">
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p className="text-sm text-gray-500 mb-3">Quick-add common ones:</p>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {RECHARGER_EXAMPLES.filter(e => !rechargers.includes(e)).slice(0, 6).map(ex => (
+              <button key={ex} onClick={() => addRecharger(ex)}
+                className="text-xs border border-green-200 bg-white hover:bg-green-50 text-green-700 px-3 py-1.5 rounded-full transition-colors">
+                + {ex}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setPhase("drain")} className="flex-shrink-0">← Back</Button>
+            <Button onClick={() => setPhase("matrix")} disabled={rechargers.length < 2}
+              className="flex-1 h-12 bg-gradient-to-r from-green-500 to-teal-500 font-bold disabled:opacity-40">
+              See My Energy Map →
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "matrix") {
+    const balance = rechargers.length - drainers.length;
+    return (
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-yellow-50 to-amber-50">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-2xl font-black text-gray-900 mb-2 text-center">Your Energy Map</h2>
+          <p className="text-gray-500 text-sm mb-6 text-center">Here's how your energy flows</p>
+
+          <div className="grid md:grid-cols-2 gap-5 mb-6">
+            <Card className="border-2 border-red-200 bg-red-50">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Battery className="w-5 h-5 text-red-500" />
+                  <h3 className="font-black text-red-700">Draining ({drainers.length})</h3>
+                </div>
+                <div className="space-y-2">
+                  {drainers.map((d, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 text-sm text-red-800">
+                      🔴 {d}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-green-200 bg-green-50">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Zap className="w-5 h-5 text-green-500" />
+                  <h3 className="font-black text-green-700">Recharging ({rechargers.length})</h3>
+                </div>
+                <div className="space-y-2">
+                  {rechargers.map((r, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 text-sm text-green-800">
+                      🟢 {r}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className={`rounded-2xl p-5 mb-6 ${balance >= 0 ? "bg-green-50 border-2 border-green-200" : "bg-red-50 border-2 border-red-200"}`}>
+            <p className="font-black text-xl mb-1">
+              {balance > 2 ? "⚡ Good energy balance!" : balance >= 0 ? "⚠️ Just about balanced" : "🔴 More drainers than rechargers"}
+            </p>
+            <p className={`text-sm ${balance >= 0 ? "text-green-700" : "text-red-700"}`}>
+              {balance > 2
+                ? "You have a solid mix. Keep scheduling your rechargers consistently."
+                : balance >= 0
+                ? "You're borderline. Adding even one more recharger to your week would help significantly."
+                : "This is a recipe for burnout. Let's build an action plan to add more recovery to your days."}
+            </p>
+          </div>
+
+          <Button onClick={() => setPhase("plan")} className="w-full h-12 bg-gradient-to-r from-yellow-500 to-amber-500 font-bold">
+            Build My Action Plan →
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "plan") {
+    return (
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-purple-50 to-indigo-50">
+        <div className="max-w-xl mx-auto">
+          <Trophy className="w-12 h-12 text-yellow-500 mb-4" />
+          <h2 className="text-2xl font-black text-gray-900 mb-2">Your Action Plan</h2>
+          <p className="text-gray-500 text-sm mb-6">Choose 1-3 things you'll commit to doing differently this week</p>
+
+          <div className="flex gap-2 mb-4">
+            <input value={commitment} onChange={e => setCommitment(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") addCommitment(); }}
+              placeholder={`e.g. Schedule 30 min of ${rechargers[0] || "recharging"} daily`}
+              className="flex-1 border-2 border-purple-200 rounded-xl px-4 py-3 focus:border-purple-400 focus:outline-none text-gray-800 text-sm" />
+            <Button onClick={addCommitment} disabled={!commitment.trim()} className="bg-purple-500 hover:bg-purple-600 px-5">
+              <Plus className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {rechargers.slice(0, 3).map((r, i) => (
+            <button key={i} onClick={() => setCommitment(`Do more of: ${r}`)}
+              className="block w-full text-left text-xs border border-purple-200 bg-white hover:bg-purple-50 text-purple-700 px-4 py-2 rounded-xl mb-2 transition-colors">
+              💡 Suggestion: "Schedule time for: {r}"
+            </button>
+          ))}
+
+          {commitments.length > 0 && (
+            <div className="mt-4 space-y-2 mb-6">
+              {commitments.map((c, i) => (
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-3 bg-purple-100 rounded-xl px-4 py-3">
+                  <span className="text-purple-500 font-black">{i + 1}.</span>
+                  <p className="text-purple-800 text-sm flex-1">{c}</p>
+                  <button onClick={() => setCommitments(p => p.filter((_, idx) => idx !== i))}>
+                    <Trash2 className="w-4 h-4 text-purple-400 hover:text-purple-600" />
+                  </button>
                 </motion.div>
               ))}
             </div>
-          </div>
+          )}
 
-          <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4 mb-6">
-            <p className="text-sm text-gray-700">
-              Add at least 3 items to each category. Awareness is the first step to managing your energy.
-            </p>
+          <p className="text-gray-600 mb-4 font-medium mt-4">How do you feel after this reflection?</p>
+          <div className="grid grid-cols-5 gap-2">
+            {[{v:"very_low",e:"😢"},{v:"low",e:"😟"},{v:"neutral",e:"😐"},{v:"good",e:"🙂"},{v:"very_good",e:"😊"}].map(m => (
+              <Button key={m.v} variant="outline" className="h-16 text-3xl border-2 hover:border-purple-400" onClick={() => onComplete(m.v)}>{m.e}</Button>
+            ))}
           </div>
-
-          <Button
-            onClick={() => setStep(2)}
-            disabled={!canContinue}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-14 text-lg"
-          >
-            View My Matrix
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
+        </div>
+      </div>
+    );
+  }
 }
